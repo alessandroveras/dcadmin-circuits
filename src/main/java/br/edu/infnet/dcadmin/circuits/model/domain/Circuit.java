@@ -76,6 +76,10 @@ public class Circuit implements Serializable {
 	public void setPortB(Port portB) {
 		this.portB = portB;
 	}
+	
+	public void connect() {
+		this.status = "CONNECTED";
+	}
 
 	@Override
 	public int hashCode() {

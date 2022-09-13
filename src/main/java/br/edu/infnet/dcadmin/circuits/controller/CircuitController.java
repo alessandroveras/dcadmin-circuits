@@ -2,6 +2,7 @@ package br.edu.infnet.dcadmin.circuits.controller;
 
 import java.net.URI;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +18,19 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import br.edu.infnet.dcadmin.circuits.model.domain.Circuit;
 import br.edu.infnet.dcadmin.circuits.model.service.CircuitService;
+import br.edu.infnet.dcadmin.circuits.model.service.DeviceService;
 
 @RestController
 @RequestMapping(value = "/circuits")
 public class CircuitController {
 
+	private static final Logger LOGGER = Logger.getLogger(CircuitController.class.getName());
+
 	@Autowired
 	private CircuitService circuitService;
+
+	@Autowired
+	DeviceService deviceService;
 
 	@PostMapping
 	public ResponseEntity<Circuit> create(@RequestBody Circuit circuit) {
@@ -35,6 +42,7 @@ public class CircuitController {
 
 	@GetMapping
 	public ResponseEntity<List<Circuit>> retrieve() {
+		LOGGER.info("Getting all circuits!");
 		List<Circuit> circuits = circuitService.retrieve();
 		return ResponseEntity.ok().body(circuits);
 	}
@@ -55,6 +63,21 @@ public class CircuitController {
 	public ResponseEntity<Circuit> findById(@PathVariable Long id) {
 		Circuit circuit = circuitService.findById(id);
 		return ResponseEntity.ok().body(circuit);
+	}
+
+	@GetMapping(value = "/{id}/connect")
+	public ResponseEntity<Void> connect(@PathVariable Long id) {
+		LOGGER.info("Calling device calculateBW method!");
+
+		Circuit circuit = circuitService.findById(id);
+
+		if (deviceService.calculateBandwitdh().equals("<Integer>320000</Integer>")) {
+			circuit.connect();
+			circuitService.update(id, circuit);
+			return ResponseEntity.ok(null);
+		}
+		return ResponseEntity.internalServerError().build();
+
 	}
 
 }
